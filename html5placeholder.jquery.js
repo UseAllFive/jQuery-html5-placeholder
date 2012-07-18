@@ -26,34 +26,52 @@
   $.fn.placeholder = function(options) {
     
     //merge in passed in options, if any
-    options = $.extend({}, $.fn.placeholder.defaults, options);
+    options = $.extend(true, {}, $.fn.placeholder.defaults, options);
     //cache the original 'left' value, for use by Opera later
-    var o_left = options.placeholderCSS.left;
-  
-    return (hasPlaceholder) ? this : this.each(function() {
+    var o_left = options.placeholderCSS.left,
+    //decide if our custom behavior should be applied
+        custom_el = !this.is('input');
+        
+    return (hasPlaceholder && !custom_el) ? this : this.each(function() {
       if ($(this).data('hasPlaceholder')) {
         return;
       }
       //local vars
       var $this = $(this),
-          inputVal = $.trim($this.val()),
-          inputWidth = $this.width(),
-          inputHeight = $this.height(),
-
-          //grab the inputs id for the <label @for>, or make a new one from the Date
-          inputId = (this.id) ? this.id : 'placeholder' + (Math.floor(Math.random() * 1123456789)),
-          placeholderText = $this.attr('placeholder'),
-          placeholder = $('<label for='+ inputId +'>'+ placeholderText + '</label>');
-        
-      //stuff in some calculated values into the placeholderCSS object
-      options.placeholderCSS['width'] = inputWidth;
-      options.placeholderCSS['height'] = inputHeight;
-      options.placeholderCSS['color'] = options.color;
-
-      //adjust position of placeholder
-      options.placeholderCSS.left = (isOldOpera && (this.type == 'email' || this.type == 'url')) ?
-         '11%' : o_left;
-      placeholder.css(options.placeholderCSS);
+          inputElement = (custom_el) ? options.customInputElement : $this,
+          inputVal, inputWidth, inputHeight,
+          //grab the inputs id for the <label @for>, or make a new one from Date
+          inputId = (this.id) ? this.id :
+            'placeholder' + (Math.floor(Math.random() * 1123456789)),
+          placeholderText, placeholder,
+          customLineHeight = $this.css('line-height');
+      
+      inputVal = $.trim(inputElement.val());
+      if (custom_el) {
+        //custom input setup
+        placeholderText = $this.data('placeholder');
+        placeholder = $('<span>')
+          .attr('data-for', inputId)
+          .addClass(options.placeholderClass+' '+$this.attr('class'));
+        if (options.customVisibleCSS['line-height'] === '_preset') {
+          options.customVisibleCSS['line-height'] = customLineHeight;
+        }
+      } else {
+        placeholderText = $this.attr('placeholder');
+        placeholder = $('<label>').attr('for', inputId);
+        //stuff in some calculated values into the placeholderCSS object
+        inputWidth = $this.width();
+        inputHeight = $this.height();
+        options.placeholderCSS['width'] = inputWidth;
+        options.placeholderCSS['height'] = inputHeight;
+        options.placeholderCSS['color'] = options.color;
+        //adjust position of placeholder
+        options.placeholderCSS.left = (!custom_el && isOldOpera &&
+          (this.type == 'email' || this.type == 'url')) ?
+          '11%' : o_left;
+        placeholder.css(options.placeholderCSS);
+      }
+      placeholder.text(placeholderText);
     
       //place the placeholder
       $this
@@ -62,22 +80,51 @@
         .after(placeholder)
         .data('hasPlaceholder', true);
       
+      //more custom input setup
+      if (custom_el) {
+        if (options.customContentEditable.invisibleCSS['height'] === '_stretch') {
+          options.customContentEditable.invisibleCSS['height'] = placeholder.outerHeight();
+        }
+        $this
+          .addClass(options.customInputClass)
+          .css(options.customContentEditable.invisibleCSS);
+        
+      }
+      
       //if the input isn't empty
       if (inputVal){
         placeholder.hide();
       }
-    
+      
+      function contenteditableVal(val){
+        return $('<div>').html(val).text();
+      }
+      
       //hide placeholder on focus
-        if (!$.trim($this.val())){
-          placeholder.hide();
       $this.on('focus', function(){
+        var val = custom_el ? contenteditableVal(inputElement.val()) :
+                  inputElement.val();
+        if (!$.trim(val).length) {
+          if (custom_el) {
+            placeholder.css(options.customInvisibleCSS);
+            $this.css(options.customContentEditable.visibleCSS);
+          } else {
+            placeholder.hide();
+          }
         }
       });
     
       //show placeholder if the input is empty
-        if (!$.trim($this.val())){
-          placeholder.show();
       $this.on('blur', function(){
+        var val = custom_el ? contenteditableVal(inputElement.val()) :
+                  inputElement.val();
+        if (!$.trim(val).length) {
+          if (custom_el) {
+            placeholder.css(options.customVisibleCSS);
+            $this.css(options.customContentEditable.invisibleCSS);
+          } else {
+            placeholder.show();
+          }
         }
       });
     });
@@ -98,6 +145,39 @@
       'top':'3px',
       'overflow-x': 'hidden',
 			'display': 'block'
+    },
+    placeholderClass: 'placeholder',
+    customInputElement: null,
+    customInputClass: 'has-placeholder',
+    customContentEditable: {
+      visibleCSS: {
+        'display': 'inline-block',
+        'position': 'static',
+        'width': 'auto',
+        'height': 'auto'
+      },
+      invisibleCSS: {
+        'display': 'block',
+        'position': 'absolute',
+        'height': '_stretch',
+        'width': '100%',
+        'z-index': 10
+      }
+    },
+    customVisibleCSS: {
+      'opacity': 1,
+      'height': 'auto',
+      'line-height': '_preset',
+      'margin-left': 0,
+      'position': 'static',
+      'width': 'auto'
+    },
+    customInvisibleCSS: {
+      'opacity': 0,
+      'height': 0,
+      'line-height': 0,
+      'position': 'absolute',
+      'width': 0
     }
   };
 })(jQuery);
