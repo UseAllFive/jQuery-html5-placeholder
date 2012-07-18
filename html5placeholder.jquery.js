@@ -31,8 +31,9 @@
     var o_left = options.placeholderCSS.left;
   
     return (hasPlaceholder) ? this : this.each(function() {
-      //TODO: if this element already has a placeholder, exit
-    
+      if ($(this).data('hasPlaceholder')) {
+        return;
+      }
       //local vars
       var $this = $(this),
           inputVal = $.trim($this.val()),
@@ -55,8 +56,11 @@
       placeholder.css(options.placeholderCSS);
     
       //place the placeholder
-      $this.wrap(options.inputWrapper);
-      $this.attr('id', inputId).after(placeholder);
+      $this
+        .wrap(options.inputWrapper)
+        .attr('id', inputId)
+        .after(placeholder)
+        .data('hasPlaceholder', true);
       
       //if the input isn't empty
       if (inputVal){
