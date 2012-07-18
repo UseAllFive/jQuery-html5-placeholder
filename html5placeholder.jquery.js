@@ -6,11 +6,14 @@
 // for a native implementation before building one.
 //
 //
-// USAGE: 
+// USAGE:
 //$('input[placeholder]').placeholder();
 
 // <input type="text" placeholder="username">
 (function($){
+  
+  "use strict";
+  
   //feature detection
   var hasPlaceholder = 'placeholder' in document.createElement('input');
   
@@ -20,14 +23,14 @@
 
   $.fn.placeholder = function(options) {
     //merge in passed in options, if any
-    var options = $.extend({}, $.fn.placeholder.defaults, options),
+    options = $.extend({}, $.fn.placeholder.defaults, options);
     //cache the original 'left' value, for use by Opera later
-    o_left = options.placeholderCSS.left;
+    var o_left = options.placeholderCSS.left;
   
     //first test for native placeholder support before continuing
     //feature detection inspired by ye olde jquery 1.4 hawtness, with paul irish
     return (hasPlaceholder) ? this : this.each(function() {
-  	  //TODO: if this element already has a placeholder, exit
+      //TODO: if this element already has a placeholder, exit
     
       //local vars
       var $this = $(this),
@@ -45,7 +48,7 @@
       options.placeholderCSS['height'] = inputHeight;
       options.placeholderCSS['color'] = options.color;
 
-      // adjust position of placeholder 
+      //adjust position of placeholder
       options.placeholderCSS.left = (isOldOpera && (this.type == 'email' || this.type == 'url')) ?
          '11%' : o_left;
       placeholder.css(options.placeholderCSS);
@@ -57,20 +60,20 @@
       //if the input isn't empty
       if (inputVal){
         placeholder.hide();
-      };
+      }
     
       //hide placeholder on focus
       $this.focus(function(){
         if (!$.trim($this.val())){
           placeholder.hide();
-        };
+        }
       });
     
       //show placeholder if the input is empty
       $this.blur(function(){
         if (!$.trim($this.val())){
           placeholder.show();
-        };
+        }
       });
     });
   };
@@ -83,11 +86,11 @@
     //more or less just emulating what webkit does here
     //tweak to your hearts content
     placeholderCSS: {
-      'font':'0.75em sans-serif', 
-      'color':'#bababa', 
-      'position': 'absolute', 
+      'font':'0.75em sans-serif',
+      'color':'#bababa',
+      'position': 'absolute',
       'left':'5px',
-      'top':'3px', 
+      'top':'3px',
       'overflow-x': 'hidden',
 			'display': 'block'
     }
