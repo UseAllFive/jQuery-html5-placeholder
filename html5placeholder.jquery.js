@@ -68,16 +68,16 @@
       }
     
       //hide placeholder on focus
-      $this.focus(function(){
         if (!$.trim($this.val())){
           placeholder.hide();
+      $this.on('focus', function(){
         }
       });
     
       //show placeholder if the input is empty
-      $this.blur(function(){
         if (!$.trim($this.val())){
           placeholder.show();
+      $this.on('blur', function(){
         }
       });
     });
