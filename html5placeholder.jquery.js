@@ -15,6 +15,8 @@
   "use strict";
   
   //feature detection
+  //first test for native placeholder support before continuing
+  //feature detection inspired by ye olde jquery 1.4 hawtness, with paul irish
   var hasPlaceholder = 'placeholder' in document.createElement('input');
   
   //sniffy sniff sniff -- just to give extra left padding for the older
@@ -22,13 +24,12 @@
   var isOldOpera = $.browser.opera && $.browser.version < 10.5;
 
   $.fn.placeholder = function(options) {
+    
     //merge in passed in options, if any
     options = $.extend({}, $.fn.placeholder.defaults, options);
     //cache the original 'left' value, for use by Opera later
     var o_left = options.placeholderCSS.left;
   
-    //first test for native placeholder support before continuing
-    //feature detection inspired by ye olde jquery 1.4 hawtness, with paul irish
     return (hasPlaceholder) ? this : this.each(function() {
       //TODO: if this element already has a placeholder, exit
     
@@ -82,7 +83,7 @@
   $.fn.placeholder.defaults = {
     //you can pass in a custom wrapper
     inputWrapper: '<span style="position:relative; display:block;"></span>',
-  
+    
     //more or less just emulating what webkit does here
     //tweak to your hearts content
     placeholderCSS: {
